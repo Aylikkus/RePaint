@@ -1,0 +1,13 @@
+C:\Users\user\source\repos\RePaint\bin\Release\RePaint.exe.config
+C:\Users\user\source\repos\RePaint\bin\Release\RePaint.exe
+C:\Users\user\source\repos\RePaint\bin\Release\RePaint.pdb
+C:\Users\user\source\repos\RePaint\obj\Release\RePaint.csproj.AssemblyReference.cache
+C:\Users\user\source\repos\RePaint\obj\Release\RePaint.csproj.SuggestedBindingRedirects.cache
+C:\Users\user\source\repos\RePaint\obj\Release\RePaint.Forms.About.resources
+C:\Users\user\source\repos\RePaint\obj\Release\RePaint.Forms.MainForm.resources
+C:\Users\user\source\repos\RePaint\obj\Release\RePaint.Forms.NewPaintAreaForm.resources
+C:\Users\user\source\repos\RePaint\obj\Release\RePaint.Properties.Resources.resources
+C:\Users\user\source\repos\RePaint\obj\Release\RePaint.csproj.GenerateResource.cache
+C:\Users\user\source\repos\RePaint\obj\Release\RePaint.csproj.CoreCompileInputs.cache
+C:\Users\user\source\repos\RePaint\obj\Release\RePaint.exe
+C:\Users\user\source\repos\RePaint\obj\Release\RePaint.pdb
