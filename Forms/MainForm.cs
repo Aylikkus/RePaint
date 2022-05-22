@@ -1,8 +1,11 @@
-﻿using RePaint.Utils;
-using System;
-using System.Drawing;
+﻿using System;
 using System.IO;
+using System.Drawing;
 using System.Windows.Forms;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+
+using RePaint.Utils;
 
 namespace RePaint.Forms
 {
@@ -20,8 +23,9 @@ namespace RePaint.Forms
         Label startAngleLabel;
         #endregion
 
+        LinkedListNode<PaintArea> paintAreasActive;
+        LinkedList<PaintArea> paintAreas;
         PaintArea paintArea;
-
 
         public void UpdateStatus()
         {
@@ -31,6 +35,7 @@ namespace RePaint.Forms
             if (tlStrpStpFileName.Text == "")
                 tlStrpStpFileName.Text = "untitled.png";
         }
+
         public void CreateNewPaintArea(Color color,
             int width = 800, int height = 600)
         {
@@ -41,9 +46,12 @@ namespace RePaint.Forms
                 new Pen(brushClrPnl.BackColor, penWidthTrBar.Value),
                 color);
 
-            paintArea.AssignTo(paintPanel);
-            paintArea.PictureBox.MouseMove += new MouseEventHandler(paintArea_MouseMove);
-            paintArea.PictureBox.SizeChanged += new EventHandler(paintArea_SizeChanged);
+            ReInitializePaintArea();
+
+            paintAreas = new LinkedList<PaintArea>();
+            paintAreas.AddFirst(paintArea.Copy());
+
+            paintAreasActive = paintAreas.First;
         }
 
         public void CreateNewPaintAreaFromImage(Image image)
@@ -53,10 +61,21 @@ namespace RePaint.Forms
 
             paintArea = new PaintArea(image,
                 new Pen(brushClrPnl.BackColor, penWidthTrBar.Value));
-            
 
+            ReInitializePaintArea();
+
+            paintAreas = new LinkedList<PaintArea>();
+            paintAreas.AddFirst(paintArea.Copy());
+
+            paintAreasActive = paintAreas.First;
+        }
+
+        public void ReInitializePaintArea()
+        {
             paintArea.AssignTo(paintPanel);
+            
             paintArea.PictureBox.MouseMove += new MouseEventHandler(paintArea_MouseMove);
+            paintArea.ImageUpdated += new EventHandler(paintArea_ImageChanged);
             paintArea.PictureBox.SizeChanged += new EventHandler(paintArea_SizeChanged);
         }
 
@@ -146,6 +165,21 @@ namespace RePaint.Forms
             toolBox.Controls.Add(startAngleLabel);
             toolBox.Controls.Add(PieStartAngleTrBar);
             #endregion
+
+            foreach (Control ctrl in toolBox.Controls)
+            {
+
+                if (ctrl is Button)
+                {
+                    if (ctrl == swapBtn ||
+                    ctrl == selectlAllBtn ||
+                    ctrl == penStyleBtn)
+                        continue;
+
+                    ((Button)ctrl).Click += new EventHandler(stateButton_Click);
+                }
+            }
+
             DoubleBuffered = true;
 
             CreateNewPaintArea(Color.White);
@@ -158,7 +192,7 @@ namespace RePaint.Forms
             Image image = new Bitmap(brushStylePnl.Width, brushStylePnl.Height);
             using (Graphics g = Graphics.FromImage(image))
             {
-                g.FillEllipse(PaintArea.Pen.Brush, 0, 0, brushStylePnl.Width - 5, brushStylePnl.Height - 5);
+                g.FillEllipse(PaintAreaArgs.Pen.Brush, 0, 0, brushStylePnl.Width - 5, brushStylePnl.Height - 5);
             }
 
             brushStylePnl.BackgroundImage = image;
@@ -174,8 +208,25 @@ namespace RePaint.Forms
             tlStrpStpFileName.Text = ((PictureBox)sender).Size.ToString();
         }
 
-        #region Кнопки toolBox
-        private void resetBtns()
+        private void paintArea_ImageChanged(object sender, EventArgs e)
+        {
+            while (paintAreasActive.Next != null)
+            {
+                paintAreas.Remove(paintAreasActive.Next);
+            }
+            while (paintAreas.Count > 5)
+            {
+                paintAreas.RemoveFirst();
+            }
+            forwardToolStripMenuItem.Enabled = false;
+
+            paintAreasActive = paintAreas.AddAfter(paintAreasActive, paintArea.Copy());
+            backToolStripMenuItem.Enabled = true;
+        }
+
+        #region Методы, связанные с toolBox
+
+        private void stateButton_Click(object sender, EventArgs e)
         {
             foreach (Control ctrl in toolBox.Controls)
             {
@@ -184,81 +235,72 @@ namespace RePaint.Forms
             }
 
             #region Сокрытие доп. элементов управления
-            sweepAngleLabel.Enabled = false;
-            sweepAngleLabel.Visible = false;
+            if (sender != ellipsePieBtn)
+            {
+                sweepAngleLabel.Enabled = false;
+                sweepAngleLabel.Visible = false;
 
-            PieSweepAngleTrBar.Enabled = false;
-            PieSweepAngleTrBar.Visible = false;
+                PieSweepAngleTrBar.Enabled = false;
+                PieSweepAngleTrBar.Visible = false;
 
-            startAngleLabel.Enabled = false;
-            startAngleLabel.Visible = false;
+                startAngleLabel.Enabled = false;
+                startAngleLabel.Visible = false;
 
-            PieStartAngleTrBar.Enabled = false;
-            PieStartAngleTrBar.Visible = false;
+                PieStartAngleTrBar.Enabled = false;
+                PieStartAngleTrBar.Visible = false;
+            }
 
+            if (sender != sprayBtn)
+            {
+                sprayPressureTrBar.Enabled = false;
+                sprayPressureTrBar.Visible = false;
 
-            sprayPressureTrBar.Enabled = false;
-            sprayPressureTrBar.Visible = false;
-
-            sprayPressureLabel.Enabled = false;
-            sprayPressureLabel.Visible = false;
+                sprayPressureLabel.Enabled = false;
+                sprayPressureLabel.Visible = false;
+            }
             #endregion
+
+            ((Button)sender).BackColor = SystemColors.GradientInactiveCaption;
         }
 
         private void cursorBtn_Click(object sender, EventArgs e)
         {
-            resetBtns();
-            ((Button)sender).BackColor = SystemColors.GradientInactiveCaption;
-            PaintArea.State = State.Cursor;
+            PaintAreaArgs.State = State.Cursor;
         }
 
         private void deleterBtn_Click(object sender, EventArgs e)
         {
-            resetBtns();
-            ((Button)sender).BackColor = SystemColors.GradientInactiveCaption;
-            PaintArea.State = State.Delete;
+            PaintAreaArgs.State = State.Delete;
         }
 
         private void brushBtn_Click(object sender, EventArgs e)
         {
-            resetBtns();
-            ((Button)sender).BackColor = SystemColors.GradientInactiveCaption;
-            PaintArea.State = State.Brush;
+            PaintAreaArgs.State = State.Brush;
         }
 
         private void eraserBtn_Click(object sender, EventArgs e)
         {
-            resetBtns();
-            ((Button)sender).BackColor = SystemColors.GradientInactiveCaption;
-            PaintArea.State = State.Eraser;
+            PaintAreaArgs.State = State.Eraser;
         }
 
         private void lineBtn_Click(object sender, EventArgs e)
         {
-            resetBtns();
-            ((Button)sender).BackColor = SystemColors.GradientInactiveCaption;
-            PaintArea.State = State.Line;
+            PaintAreaArgs.State = State.Line;
         }
 
         private void rectangleBtn_Click(object sender, EventArgs e)
         {
-            resetBtns();
-            ((Button)sender).BackColor = SystemColors.GradientInactiveCaption;
-            PaintArea.State = State.Rectangle;
+            PaintAreaArgs.State = State.Rectangle;
         }
 
         private void ellipseBtn_Click(object sender, EventArgs e)
         {
-            resetBtns();
-            ((Button)sender).BackColor = SystemColors.GradientInactiveCaption;
-            PaintArea.State = State.Ellipse;
+            PaintAreaArgs.State = State.Ellipse;
         }
 
         private void ellipsePieBtn_Click(object sender, EventArgs e)
         {
-            resetBtns();
-            ((Button)sender).BackColor = SystemColors.GradientInactiveCaption;
-            PaintArea.State = State.EllipsePie;
+            PaintAreaArgs.State = State.EllipsePie;
 
             #region Видимость доп. элементов управления
             sweepAngleLabel.Enabled = true;
@@ -271,28 +313,23 @@ namespace RePaint.Forms
             PieStartAngleTrBar.Visible = true;
             #endregion
 
-            PaintArea.PieStartAngle = PieStartAngleTrBar.Value;
-            PaintArea.PieSweepAngle = PieSweepAngleTrBar.Value;
+            PaintAreaArgs.PieStartAngle = PieStartAngleTrBar.Value;
+            PaintAreaArgs.PieSweepAngle = PieSweepAngleTrBar.Value;
         }
         private void lineBezierBtn_Click(object sender, EventArgs e)
         {
-            resetBtns();
-            ((Button)sender).BackColor = SystemColors.GradientInactiveCaption;
-            PaintArea.State = State.LineBezier;
+            PaintAreaArgs.State = State.LineBezier;
         }
 
         private void curveBtn_Click(object sender, EventArgs e)
         {
-            resetBtns();
-            ((Button)sender).BackColor = SystemColors.GradientInactiveCaption;
-            PaintArea.State = State.Curve;
+            PaintAreaArgs.State = State.Curve;
         }
 
         private void sprayBtn_Click(object sender, EventArgs e)
         {
-            resetBtns();
-            ((Button)sender).BackColor = SystemColors.GradientInactiveCaption;
-            PaintArea.State = State.SprayCurve;
+            PaintAreaArgs.State = State.SprayCurve;
+            sprayPressureTrBar.Value = (int)(PaintAreaArgs.SprayDistribution * 100);
 
             #region Видимость доп. элементов управления
             sprayPressureTrBar.Visible = true;
@@ -300,31 +337,38 @@ namespace RePaint.Forms
             sprayPressureLabel.Visible = true;
             sprayPressureLabel.Enabled = true;
             #endregion
+        }
 
-            PaintArea.SprayDistribution = sprayPressureTrBar.Value / 100;
+        private void bucketBtn_Click(object sender, EventArgs e)
+        {
+            PaintAreaArgs.State = State.FillBucket;
+        }
+
+        private void selectAreaBtn_Click(object sender, EventArgs e)
+        {
+            PaintAreaArgs.State = State.SelectArea;
         }
 
         private void swapBtn_Click(object sender, EventArgs e)
         {
             Color temp = brushClrPnl.BackColor;
 
-            PaintArea.Pen.Color = altClrPnl.BackColor;
+            PaintAreaArgs.PenColor = Color.FromArgb(
+                    PaintAreaArgs.PenColor.A, altClrPnl.BackColor);
             brushClrPnl.BackColor = altClrPnl.BackColor;
 
             altClrPnl.BackColor = temp;
-
-            PaintArea.UpdateImageAttributes();
         }
 
         private void brushClrPnl_Click(object sender, EventArgs e)
         {
             if (ColorDialog.ShowDialog() == DialogResult.OK)
             {
-                PaintArea.Pen.Color = ColorDialog.Color;
+                PaintAreaArgs.PenColor = Color.FromArgb(
+                    PaintAreaArgs.PenColor.A, ColorDialog.Color);
                 brushClrPnl.BackColor = ColorDialog.Color;
 
                 updateBrushStylePnl();
-                PaintArea.UpdateImageAttributes();
             }
         }
 
@@ -343,30 +387,28 @@ namespace RePaint.Forms
         private void selectlAllBtn_Click(object sender, EventArgs e)
         {
             paintArea.SelectAll();
-            
         }
 
         private void penWidthTrBar_ValueChanged(object sender, EventArgs e)
         {
-            PaintArea.Pen.Width = penWidthTrBar.Value;
-            PaintArea.Eraser.Width = penWidthTrBar.Value;
+            PaintAreaArgs.PaintWidth = penWidthTrBar.Value;
             widthLabel.Text = $"Толщина: {penWidthTrBar.Value}";
         }
         private void PieStartAngleTrBar_ValueChanged(object sender, EventArgs e)
         {
-            PaintArea.PieStartAngle = PieStartAngleTrBar.Value;
+            PaintAreaArgs.PieStartAngle = PieStartAngleTrBar.Value;
             startAngleLabel.Text = $"Начало сектора: {PieStartAngleTrBar.Value}°";
         }
 
         private void PieSweepAngleTrBar_ValueChanged(object sender, EventArgs e)
         {
-            PaintArea.PieSweepAngle = PieSweepAngleTrBar.Value;
+            PaintAreaArgs.PieSweepAngle = PieSweepAngleTrBar.Value;
             sweepAngleLabel.Text = $"Конец сектора: {PieSweepAngleTrBar.Value}°";
         }
 
         private void sprayPressureTrBar_ValueChanged(object sender, EventArgs e)
         {
-            PaintArea.SprayDistribution = sprayPressureTrBar.Value / 100f;
+            PaintAreaArgs.SprayDistribution = sprayPressureTrBar.Value / 100f;
             sprayPressureLabel.Text = $"Сила нажатия: {sprayPressureTrBar.Value / 100f}";
         }
         #endregion
@@ -384,6 +426,21 @@ namespace RePaint.Forms
             {
                 SaveFileDialog.FileName = OpenFileDialog.FileName;
                 tlStrpStpFileName.Text = $"{StringEditor.FileNameExt(OpenFileDialog.FileName)}";
+                if (string.Equals(StringEditor.Ext(SaveFileDialog.FileName), "rpif",
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        paintArea = PaintAreaArgs.Deserialize(OpenFileDialog.FileName);
+                    }
+                    catch (SerializationException)
+                    {
+                        MessageBox.Show("Нечитаемый файл");
+                        return;
+                    }
+                    ReInitializePaintArea();
+                    return;
+                }
                 using (FileStream fs = new FileStream(OpenFileDialog.FileName, FileMode.Open))
                 {
                     CreateNewPaintAreaFromImage(Image.FromStream(fs));
@@ -400,6 +457,13 @@ namespace RePaint.Forms
                 return;
             }
 
+            if (string.Equals(StringEditor.Ext(SaveFileDialog.FileName), "rpif",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                PaintAreaArgs.Serialize(SaveFileDialog.FileName, paintArea);
+                return;
+            }
+
             tlStrpStpFileName.Text = $"{StringEditor.FileNameExt(SaveFileDialog.FileName)}";
             paintArea.PictureBox.Image.Save(SaveFileDialog.FileName);
         }
@@ -408,9 +472,60 @@ namespace RePaint.Forms
         {
             if (SaveFileDialog.ShowDialog() == DialogResult.OK)
             {
+                if (string.Equals(StringEditor.Ext(SaveFileDialog.FileName), "rpif",
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    PaintAreaArgs.Serialize(SaveFileDialog.FileName, paintArea);
+                    return;
+                }
+
                 paintArea.PictureBox.Image.Save(SaveFileDialog.FileName);
                 tlStrpStpFileName.Text = $"{StringEditor.FileNameExt(SaveFileDialog.FileName)}";
             }
+        }
+
+        private void backToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (paintAreasActive.Previous != null)
+            {
+                forwardToolStripMenuItem.Enabled = true;
+
+                paintArea = paintAreasActive.Previous.Value.Copy();
+                paintAreasActive = paintAreasActive.Previous;
+                ReInitializePaintArea();
+            }
+
+            if (paintAreasActive.Previous == null)
+            {
+                backToolStripMenuItem.Enabled = false;
+            }
+        }
+
+        private void forwardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (paintAreasActive.Next != null)
+            {
+                backToolStripMenuItem.Enabled = true;
+
+                paintArea = paintAreasActive.Next.Value.Copy();
+                paintAreasActive = paintAreasActive.Next;
+                ReInitializePaintArea();
+            }
+
+            if (paintAreasActive.Next == null)
+            {
+                forwardToolStripMenuItem.Enabled = false;
+            }
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            paintArea.DeleteSelected();
+        }
+
+        private void rasterizeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            paintArea.RasterizeSelected();
         }
 
         private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -425,5 +540,48 @@ namespace RePaint.Forms
         }
 
         #endregion
+
+        private void MainForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Control)
+            {
+                switch (e.KeyCode)
+                {
+                    case Keys.Z:
+                        backToolStripMenuItem_Click(this, EventArgs.Empty);
+                        break;
+                    case Keys.Y:
+                        forwardToolStripMenuItem_Click(this, EventArgs.Empty);
+                        break;
+                    case Keys.N:
+                        createToolStripMenuItem_Click(this, EventArgs.Empty);
+                        break;
+                    case Keys.O:
+                        openToolStripMenuItem_Click(this, EventArgs.Empty);
+                        break;
+                    case Keys.S:
+                        if (e.Shift)
+                        {
+                            saveAsToolStripMenuItem_Click(this, EventArgs.Empty);
+                        }
+                        else
+                        {
+                            saveToolStripMenuItem_Click(this, EventArgs.Empty);
+                        }
+                        break;
+                    case Keys.R:
+                        paintArea.RasterizeSelected();
+                        break;
+                    case Keys.Q:
+                        exitToolStripMenuItem_Click(this, EventArgs.Empty);
+                        break;
+                }
+            }
+
+            if (e.KeyCode == Keys.Delete)
+            {
+                paintArea.DeleteSelected();
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@ using System.Drawing;
 
 namespace RePaint.Figures
 {
+    [Serializable]
     public class Line : Figure
     {
         Point center;
@@ -73,7 +74,7 @@ namespace RePaint.Figures
         public override void Erase(Graphics g, Color eraseClr)
         {
             Pen eraser = new Pen(eraseClr);
-            eraser.Width = FigurePen.Width;
+            eraser.Width = FigureWidth;
             g.DrawLine(eraser, Location, End);
         }
 
@@ -178,14 +179,14 @@ namespace RePaint.Figures
             int denominator = dy * dy + dx * dx;
             float dist = (float)(Math.Abs(numerator) / Math.Sqrt(denominator));
 
-            return dist < (offset + FigurePen.Width);
+            return dist < (offset + FigureWidth);
         }
 
         public Line(Point start, Point end, Pen pen)
+            : base(pen)
         {
             Location = start;
             End = end;
-            FigurePen = pen;
 
             Update();
 

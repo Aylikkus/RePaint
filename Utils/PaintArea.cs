@@ -1,41 +1,73 @@
 ﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Drawing.Imaging;
+using System.Drawing.Drawing2D;
 using System.Collections.Generic;
 
 using RePaint.Figures;
 
 namespace RePaint.Utils
 {
+    [Serializable]
     public class PaintArea
     {
-        public PictureBox PictureBox { get; }
+        [NonSerialized]
+        PictureBox _pictureBox;
 
-        public static State State { get; set; }
+        List<Point> _points;
 
-        public static ImageAttributes ImageAttributes { get; set; }
-        public static Image BrushImage { get; set; }
+        List<Figure> _figures;
 
-        public static Pen Pen { get; set; }
-        public static Pen Eraser { get; private set; } = Pens.Transparent;
-
-        public static Color FillColor { get; set; }
-
-        public static float SprayDistribution { get; set; }
-        public static float PieStartAngle { get; set; }
-        public static float PieSweepAngle { get; set; }
-
-        public static bool IsPainting { get; private set; }
-
-        public List<Figure> Figures { get; private set; }
-        public List<Point> Points { get; private set; }
-
-
-        static ColorMap[] colorMap;
-
-        Point pStart, pEnd;
+        Point _pStart,
+              _pEnd;
+    
+        bool selectAll;
+   
         int selIndex;
+
+        public event EventHandler ImageUpdated;
+        
+        public Point StartPoint
+        {
+            get { return _pStart; }
+            private set 
+            { 
+                _pStart = value; 
+            }
+        }
+        public Point EndPoint
+        {
+            get { return _pEnd; }
+            private set { _pEnd = value; }
+        }
+
+        public Image ImageCopy 
+        { 
+            get { return (Image)_pictureBox.Image.Clone(); }
+        }
+
+        public PictureBox PictureBox 
+        {
+            get { return _pictureBox; }
+            private set { _pictureBox = value; }
+        }
+
+        public List<Figure> Figures 
+        { 
+            get 
+            {
+                return _figures; 
+            }
+            private set 
+            { 
+                _figures = value; 
+            } 
+        }
+        public List<Point> Points 
+        { 
+            get { return _points; }
+            private set { _points = value; }
+        }
 
         public void Clear()
         {
@@ -51,29 +83,113 @@ namespace RePaint.Utils
 
         public void SelectAll()
         {
-            //
+            selectAll = true;
+            PictureBox.Refresh();
         }
 
-        public static void UpdateImageAttributes()
+        public void UpdateFigures()
         {
-            colorMap = new ColorMap[256];
-            for (int i = 0; i < 256; i++)
+            using (var g = Graphics.FromImage(PictureBox.Image))
             {
-                colorMap[i] = new ColorMap();
-                colorMap[i].OldColor = Color.FromArgb(i, Color.Black);
-                colorMap[i].NewColor = Color.FromArgb(i, Pen.Color);
+                for (int i = 0; i < Figures.Count; i++)
+                {
+                    if (selIndex == i)
+                        continue;
+                    Figures[i].Erase(g, PaintAreaArgs.FillColor);
+                    Figures[i].Draw(g);
+                }
+            }
+        }
+
+        public void DeleteSelected()
+        {
+            if (selIndex != -1)
+            {
+                using (var g = Graphics.FromImage(PictureBox.Image))
+                {
+                    Figures[selIndex].Erase(g, PaintAreaArgs.FillColor);
+                }
+                Figures.RemoveAt(selIndex);
+                selIndex = -1;
             }
 
-            ImageAttributes = new ImageAttributes();
-            ImageAttributes.SetRemapTable(colorMap);
+            UpdateFigures();
+            PictureBox.Refresh();
+
+            ImageUpdated?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void RasterizeSelected()
+        {
+            if (selIndex != -1)
+            {
+                Figures.RemoveAt(selIndex);
+                selIndex = -1;
+            }
+
+            UpdateFigures();
+            PictureBox.Refresh();
+
+            ImageUpdated?.Invoke(this, EventArgs.Empty);
+        }
+
+        public PaintArea Copy()
+        {
+            return new PaintArea(PictureBox.Image.Width, PictureBox.Image.Height, Figures.ToArray(),
+                ImageCopy, PaintAreaArgs.Pen, PaintAreaArgs.FillColor);
+        }
+
+        public void FillArea(Color targetColor, Point p)
+        {
+            Bitmap bm = new Bitmap(PictureBox.Image);
+            Color refColor = bm.GetPixel(p.X, p.Y);
+
+            if (targetColor == refColor)
+                return;
+
+            Stack<Point> pixels = new Stack<Point>();
+            Point check = p;
+            pixels.Push(p);
+
+            while (pixels.Count > 0)
+            {
+                Point pixel = pixels.Pop();
+                if (pixel == check)
+                {
+                    pixels.Push(new Point(pixel.X - 1, pixel.Y));
+                    pixels.Push(new Point(pixel.X + 1, pixel.Y));
+                    pixels.Push(new Point(pixel.X, pixel.Y - 1));
+                    pixels.Push(new Point(pixel.X, pixel.Y + 1));
+                    continue;
+                }
+
+                if (pixel.X < bm.Width && pixel.X > 0 && pixel.Y < bm.Height && pixel.Y > 0)
+                {
+                    if (bm.GetPixel(pixel.X, pixel.Y) == refColor)
+                    {
+                        bm.SetPixel(pixel.X, pixel.Y, targetColor);
+                        if (pixel.X - 1 != check.X)
+                            pixels.Push(new Point(pixel.X - 1, pixel.Y));
+                        if (pixel.X + 1 != check.X)
+                            pixels.Push(new Point(pixel.X + 1, pixel.Y));
+                        if (pixel.Y - 1 != check.Y)
+                            pixels.Push(new Point(pixel.X, pixel.Y - 1));
+                        if (pixel.Y - 1 != check.Y)
+                            pixels.Push(new Point(pixel.X, pixel.Y + 1));
+
+                        check = pixel;
+                    }
+                }
+            }
+
+            PictureBox.Image = bm;
         }
 
         #region Конструкторы
-        public PaintArea(Pen pen)
+
+        private PaintArea()
         {
             PictureBox = new PictureBox();
-            PictureBox.Size = new Size(800, 600);
-            PictureBox.Image = new Bitmap(800, 600);
             PictureBox.BackgroundImage = Properties.Resources.transparency;
 
             PictureBox.Location = new Point(0, 0);
@@ -84,17 +200,15 @@ namespace RePaint.Utils
             PictureBox.MouseUp += new MouseEventHandler(pictureBox_MouseUp);
             PictureBox.MouseLeave += new EventHandler(pictureBox_MouseLeave);
 
-            Pen = pen;
-            BrushImage = Properties.Resources.solidBrush;
-            Eraser = new Pen(Color.Transparent, Pen.Width);
-
-            FillColor = Color.White;
             Figures = new List<Figure>();
             Points = new List<Point>(4);
-            IsPainting = false;
             selIndex = -1;
+        }
 
-            UpdateImageAttributes();
+        private PaintArea(Pen pen)
+            : this()
+        {
+            PaintAreaArgs.SetPenWith(pen);
         }
 
         public PaintArea(int width, int height, Pen pen)
@@ -108,19 +222,35 @@ namespace RePaint.Utils
             : this(pen)
         {
             PictureBox.Size = image.Size;
-            PictureBox.Image = image;
+            PictureBox.Image = new Bitmap(image);
         }
 
         public PaintArea(int width, int height, Pen pen, Color bgClr)
             : this(width, height, pen)
         {
             PictureBox.BackColor = bgClr;
-            FillColor = bgClr;
+            PaintAreaArgs.FillColor = bgClr;
 
             using (var g = Graphics.FromImage(PictureBox.Image))
             {
                 g.FillRectangle(new SolidBrush(bgClr), 0, 0, PictureBox.Width, PictureBox.Height);
             }
+        }
+
+        public PaintArea(int width, int height, Figure[] figures,
+            Image image, Pen pen, Color bgColor)
+            : this(width, height, pen, bgColor)
+        {
+            foreach (var fig in figures)
+            {
+                Figures.Add(fig.Copy());
+            }
+            using (var g = Graphics.FromImage(PictureBox.Image))
+            {
+                g.DrawImage(image, 0, 0, PictureBox.Width, PictureBox.Height);
+            }
+
+            UpdateFigures();
         }
         #endregion
 
@@ -128,60 +258,81 @@ namespace RePaint.Utils
         {
             Figure figure = null;
 
-            switch (State)
+            switch (PaintAreaArgs.State)
             {
                 case State.Cursor:
                     if (selIndex != -1 && saving)
                     {
                         if (Control.ModifierKeys == Keys.Shift)
-                            Figures[selIndex].RedrawSymetricallyAt(pEnd, g);
+                            Figures[selIndex].RedrawSymetricallyAt(EndPoint, g);
                         else
-                            Figures[selIndex].RedrawAt(pEnd, g);
+                            Figures[selIndex].RedrawAt(EndPoint, g);
+
+                        UpdateFigures();
+                        ImageUpdated?.Invoke(this, EventArgs.Empty);
                     }
                     else if (selIndex != -1)
                     {
 
                         Figure tempFig = Figures[selIndex].Copy();
                         if (Control.ModifierKeys == Keys.Shift)
-                            tempFig.RedrawSymetricallyAt(pEnd, g);
+                            tempFig.RedrawSymetricallyAt(EndPoint, g);
                         else
-                            tempFig.RedrawAt(pEnd, g);
+                            tempFig.RedrawAt(EndPoint, g);
                         tempFig.Select(g);
+
+                        UpdateFigures();
                     }
                     break;
                 case State.Brush:
-                    figure = new TextureCurve(Points.ToArray(), BrushImage, ImageAttributes, Pen);
+                    figure = new BrushCurve(Points.ToArray(), PaintAreaArgs.ColoredBrushImage, PaintAreaArgs.Pen);
                     break;
                 case State.Curve:
-                    figure = new Curve(Points.ToArray(), Pen);
+                    figure = new Curve(Points.ToArray(), PaintAreaArgs.Pen);
                     break;
                 case State.Eraser:
-                    figure = new Curve(Points.ToArray(), Eraser);
+                    figure = new Curve(Points.ToArray(), PaintAreaArgs.Eraser);
                     break;
                 case State.Line:
-                    figure = new Line(pStart, pEnd, Pen);
+                    figure = new Line(StartPoint, EndPoint, PaintAreaArgs.Pen);
                     break;
                 case State.Rectangle:
-                    figure = new Figures.Rectangle(pStart, pEnd, Pen);
+                    figure = new Figures.Rectangle(StartPoint, EndPoint, PaintAreaArgs.Pen);
                     break;
                 case State.Ellipse:
-                    figure = new Ellipse(pStart, pEnd, Pen);
+                    figure = new Ellipse(StartPoint, EndPoint, PaintAreaArgs.Pen);
                     break;
                 case State.EllipsePie:
-                    figure = new EllipsePie(pStart, pEnd, PieStartAngle, PieSweepAngle, Pen);
+                    figure = new EllipsePie(StartPoint, EndPoint, PaintAreaArgs.PieStartAngle, PaintAreaArgs.PieSweepAngle, PaintAreaArgs.Pen);
                     break;
                 case State.LineBezier:
-                    Point middle = new Point((pEnd.X - pStart.X) / 2 + pStart.X,
-                                             (pEnd.Y - pStart.X) / 2 + pStart.Y);
-                    figure = new LineBezier(pStart, middle, middle, pEnd, Pen);
+                    Point middle = new Point((EndPoint.X - StartPoint.X) / 2 + StartPoint.X,
+                                             (EndPoint.Y - StartPoint.X) / 2 + StartPoint.Y);
+                    figure = new LineBezier(StartPoint, middle, middle, EndPoint, PaintAreaArgs.Pen);
+                    break;
+                case State.FillBucket:
+                    if (saving)
+                    {
+                        FillArea(PaintAreaArgs.PenColor, EndPoint);
+                    }
+                    break;
+                case State.SelectArea:
+                    if (saving)
+                    {
+                        figure = new SelectAreaRect(StartPoint, EndPoint,  PictureBox.Image);
+                    }
+                    else
+                    {
+                        figure = new SelectAreaRect(StartPoint, EndPoint, null);
+                    }
                     break;
             }
 
             if (figure != null)
             {
-                if (State == State.Eraser)
+                if (PaintAreaArgs.State == State.Eraser)
                 {
-                    g.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+                    g.CompositingMode = CompositingMode.SourceCopy;
                     figure.Draw(g);
                     return;
                 }
@@ -191,7 +342,10 @@ namespace RePaint.Utils
                 else
                     figure.Draw(g);
 
-                if (saving && State != State.Brush)
+                if (saving)
+                    ImageUpdated?.Invoke(this, EventArgs.Empty);
+
+                if (saving && PaintAreaArgs.State != State.Brush)
                     Figures.Insert(0, figure);
             }
         }
@@ -199,108 +353,135 @@ namespace RePaint.Utils
         #region События
         private void pictureBox_Paint(object sender, PaintEventArgs e)
         {
+            if (selectAll == true)
+            {
+                foreach(var figure in Figures)
+                {
+                    figure.Select(e.Graphics);
+                }
+                selectAll = false;
+                return;
+            }
+
             handler(e.Graphics, false);
         }
 
         private void pictureBox_MouseMove(object sender, MouseEventArgs e)
         {
-            pEnd = e.Location;
+            EndPoint = e.Location;
 
-            if (pEnd.X < 0)
-                pEnd = new Point(0, pEnd.Y);
-            if (pEnd.Y < 0)
-                pEnd = new Point(pEnd.X, 0);
-            if (pEnd.X > PictureBox.Width)
-                pEnd = new Point(PictureBox.Width, pEnd.Y);
-            if (pEnd.Y > PictureBox.Height)
-                pEnd = new Point(pEnd.X, PictureBox.Height);
+            if (EndPoint.X < 0)
+                EndPoint = new Point(0, EndPoint.Y);
+            if (EndPoint.Y < 0)
+                EndPoint = new Point(EndPoint.X, 0);
+            if (EndPoint.X > PictureBox.Width)
+                EndPoint = new Point(PictureBox.Width, EndPoint.Y);
+            if (EndPoint.Y > PictureBox.Height)
+                EndPoint = new Point(EndPoint.X, PictureBox.Height);
 
-            if (IsPainting)
+            if (PaintAreaArgs.IsPainting)
             {
-                if (State == State.SprayCurve)
+                if (PaintAreaArgs.State == State.SprayCurve)
                 {
                     using (var g = Graphics.FromImage(PictureBox.Image))
                     {
-                        Figure fig = new SprayCurve(Points.ToArray(), SprayDistribution, Pen);
-                        fig.Draw(g);
+                        Figure figure = new SprayCurve(EndPoint, PaintAreaArgs.SprayDistribution,
+                            PaintAreaArgs.Pen);
+                        figure.Draw(g);
                     }
                 }
 
-                Points.Add(pEnd);
+                Points.Add(EndPoint);
                 PictureBox.Refresh();
             }
-            else if (!IsPainting && State == State.Brush || State == State.Eraser)
+            else if (!PaintAreaArgs.IsPainting && 
+                PaintAreaArgs.State == State.Brush || 
+                PaintAreaArgs.State == State.Eraser ||
+                PaintAreaArgs.State == State.Curve)
             {
-                Points = new List<Point>() { pEnd };
+                Points = new List<Point>() { EndPoint };
                 PictureBox.Refresh();
             }
         }
 
         private void pictureBox_MouseDown(object sender, MouseEventArgs e)
         {
-            pStart = e.Location;
-            IsPainting = true;
+            StartPoint = e.Location;
+            PaintAreaArgs.IsPainting = true;
 
-            Points.Insert(0, pStart);
+            Points.Insert(0, StartPoint);
 
-            if (State == State.Cursor)
+            if (PaintAreaArgs.State == State.Cursor)
             {
                 for (int i = 0; i < Figures.Count; i++)
                 {
-                    if (Figures[i].Contains(pStart, 5))
+                    if (Figures[i].Contains(StartPoint, 5))
                     {
                         selIndex = i;
                         Figures[selIndex].ReselectCorner(e.Location);
                         using (var g = Graphics.FromImage(PictureBox.Image))
                         {
-                            Figures[selIndex].Erase(g, FillColor);
+                            Figures[selIndex].Erase(g, PaintAreaArgs.FillColor);
                         }
                         break;
                     }
                     else
                     {
+                        if (Figures[i] is SelectAreaRect)
+                        {
+                            Figures.RemoveAt(i);
+                        }
                         selIndex = -1;
                     }
                 }
             }
 
-            if (State == State.Delete)
+            if (PaintAreaArgs.State == State.Delete)
             {
                 for (int i = 0; i < Figures.Count; i++)
                 {
-                    if (Figures[i].Contains(pStart, 5))
+                    if (Figures[i].Contains(StartPoint, 5))
                     {
                         using (var g = Graphics.FromImage(PictureBox.Image))
                         {
-                            Figures[i].Erase(g, FillColor);
+                            Figures[i].Erase(g, PaintAreaArgs.FillColor);
                             Figures.RemoveAt(i);
                         }
+                        UpdateFigures();
+
+                        ImageUpdated?.Invoke(this, EventArgs.Empty);
                         break;
                     }
                 }
             }
 
-            Points.Add(pEnd);
+            Points.Add(EndPoint);
             PictureBox.Refresh();
         }
 
         private void pictureBox_MouseUp(object sender, MouseEventArgs e)
         {
 
-            IsPainting = false;
+            PaintAreaArgs.IsPainting = false;
 
             using (var g = Graphics.FromImage(PictureBox.Image))
             {
                 handler(g, true);
             }
 
+            if (PaintAreaArgs.State == State.SprayCurve)
+                ImageUpdated?.Invoke(this, EventArgs.Empty);
+
             Points.Clear();
-            selIndex = -1;
+            UpdateFigures();
         }
 
         private void pictureBox_MouseLeave(object sender, EventArgs e)
         {
-            if (!IsPainting && State == State.Brush || State == State.Eraser)
+            if (!PaintAreaArgs.IsPainting && 
+                PaintAreaArgs.State == State.Brush || 
+                PaintAreaArgs.State == State.Curve ||
+                PaintAreaArgs.State == State.Eraser)
             {
                 Points = new List<Point>();
                 PictureBox.Refresh();

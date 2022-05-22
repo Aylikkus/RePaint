@@ -1,7 +1,9 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 
 namespace RePaint.Figures
 {
+    [Serializable]
     class Ellipse : Rectangle
     {
         public override void Draw(Graphics g)

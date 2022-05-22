@@ -73,6 +73,26 @@ namespace RePaint.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap bucket14x14 {
+            get {
+                object obj = ResourceManager.GetObject("bucket14x14", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap circle_brush1 {
+            get {
+                object obj = ResourceManager.GetObject("circle_brush1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap circle_sector14x14 {
             get {
                 object obj = ResourceManager.GetObject("circle_sector14x14", resourceCulture);
@@ -143,9 +163,9 @@ namespace RePaint.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap grass {
+        internal static System.Drawing.Bitmap Grass {
             get {
-                object obj = ResourceManager.GetObject("grass", resourceCulture);
+                object obj = ResourceManager.GetObject("Grass", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -193,9 +213,9 @@ namespace RePaint.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap rectangle {
+        internal static System.Drawing.Bitmap paint_brush2 {
             get {
-                object obj = ResourceManager.GetObject("rectangle", resourceCulture);
+                object obj = ResourceManager.GetObject("paint_brush2", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -203,9 +223,69 @@ namespace RePaint.Properties {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap solidBrush {
+        internal static System.Drawing.Bitmap paint_brush3 {
             get {
-                object obj = ResourceManager.GetObject("solidBrush", resourceCulture);
+                object obj = ResourceManager.GetObject("paint_brush3", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap paint_brush4 {
+            get {
+                object obj = ResourceManager.GetObject("paint_brush4", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap paint_brush5 {
+            get {
+                object obj = ResourceManager.GetObject("paint_brush5", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap painted_brush1 {
+            get {
+                object obj = ResourceManager.GetObject("painted_brush1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Rectangle {
+            get {
+                object obj = ResourceManager.GetObject("Rectangle", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap selectArea14x14 {
+            get {
+                object obj = ResourceManager.GetObject("selectArea14x14", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap SolidBrush {
+            get {
+                object obj = ResourceManager.GetObject("SolidBrush", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

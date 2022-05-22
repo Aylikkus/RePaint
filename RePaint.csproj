@@ -35,6 +35,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -51,8 +52,9 @@
     <Compile Include="Figures\EllipsePie.cs" />
     <Compile Include="Figures\LineBezier.cs" />
     <Compile Include="Figures\Rectangle.cs" />
+    <Compile Include="Figures\SelectAreaRect.cs" />
     <Compile Include="Figures\SprayCurve.cs" />
-    <Compile Include="Figures\TextureCurve.cs" />
+    <Compile Include="Figures\BrushCurve.cs" />
     <Compile Include="Forms\NewPaintAreaForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -70,6 +72,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utils\PaintAreaArgs.cs" />
     <Compile Include="Utils\State.cs" />
     <Compile Include="Utils\PaintArea.cs" />
     <Compile Include="Figures\Line.cs" />
@@ -119,7 +122,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <None Include="Icons\cursor14x14.png" />
   </ItemGroup>
@@ -179,6 +181,30 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\grass.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\circle_brush1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\painted_brush1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\paint_brush5.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\paint_brush3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\paint_brush4.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\paint_brush2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\bucket14x14.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\selectArea14x14.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

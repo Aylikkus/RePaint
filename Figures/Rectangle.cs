@@ -4,6 +4,7 @@ using System.Drawing.Drawing2D;
 
 namespace RePaint.Figures
 {
+    [Serializable]
     class Rectangle : Figure
     {
         protected byte selected;
@@ -11,7 +12,7 @@ namespace RePaint.Figures
 
         protected byte selectCorner(Point point)
         {
-            int offset = 15;
+            int offset = 20;
 
             if (Math.Abs(Location.X - point.X) < offset &&
                 Math.Abs(Location.Y - point.Y) < offset)
@@ -111,42 +112,45 @@ namespace RePaint.Figures
 
         public override void Select(Graphics g)
         {
-            int squareHeight = (int)FigurePen.Width / 2;
-            Size squareSize = new Size(squareHeight, squareHeight);
+            int squareSide = 20;
+            Size squareSize = new Size(squareSide, squareSide);
 
             Point upLeft = Location;
             Point upRight = new Point(End.X, Location.Y);
             Point downLeft = new Point(Location.X, End.Y);
             Point downRight = End;
 
-            upLeft.Offset(-squareHeight / 2, -squareHeight / 2);
-            upRight.Offset(-squareHeight / 2, -squareHeight / 2);
-            downLeft.Offset(-squareHeight / 2, -squareHeight / 2);
-            downRight.Offset(-squareHeight / 2, -squareHeight / 2);
+            upLeft.Offset(-squareSide / 2, -squareSide / 2);
+            upRight.Offset(-squareSide / 2, -squareSide / 2);
+            downLeft.Offset(-squareSide / 2, -squareSide / 2);
+            downRight.Offset(-squareSide / 2, -squareSide / 2);
 
 
             Point center = new Point((End.X + Location.X) / 2, (Location.Y + End.Y) / 2);
+            center.Offset(-squareSide / 2, -squareSide / 2);
 
-            Pen ordinary = new Pen(Color.Black, squareHeight);
+            Pen ordinary = new Pen(Color.Black, 2);
+            SolidBrush sb = new SolidBrush(Color.White);
 
             // Штриховое выделение прямоугольника
             Pen dotted = new Pen(Color.Gray, 1);
             dotted.DashStyle = DashStyle.Dash;
             g.DrawRectangle(dotted, Location.X, Location.Y, FigureSize.Width, FigureSize.Height);
 
-            // Выделение 4-ёх углов прямоугольника
-            g.FillRectangle(new SolidBrush(Color.White), new System.Drawing.Rectangle(upLeft, squareSize));
-            g.FillRectangle(new SolidBrush(Color.White), new System.Drawing.Rectangle(downLeft, squareSize));
-            g.FillRectangle(new SolidBrush(Color.White), new System.Drawing.Rectangle(downRight, squareSize));
-            g.FillRectangle(new SolidBrush(Color.White), new System.Drawing.Rectangle(upRight, squareSize));
-
-
+            // Выделение 4-ёх углов прямоугольника и центра
+            g.FillRectangle(sb, new System.Drawing.Rectangle(upLeft, squareSize));
             g.DrawRectangle(ordinary, new System.Drawing.Rectangle(upLeft, squareSize));
+
+            g.FillRectangle(sb, new System.Drawing.Rectangle(downLeft, squareSize));
             g.DrawRectangle(ordinary, new System.Drawing.Rectangle(upRight, squareSize));
+            
+            g.FillRectangle(sb, new System.Drawing.Rectangle(downRight, squareSize));
             g.DrawRectangle(ordinary, new System.Drawing.Rectangle(downLeft, squareSize));
+            
+            g.FillRectangle(sb, new System.Drawing.Rectangle(upRight, squareSize));
             g.DrawRectangle(ordinary, new System.Drawing.Rectangle(downRight, squareSize));
 
-            g.FillEllipse(new SolidBrush(Color.White), new System.Drawing.Rectangle(center, squareSize));
+            g.FillEllipse(sb, new System.Drawing.Rectangle(center, squareSize));
             g.DrawEllipse(ordinary, new System.Drawing.Rectangle(center, squareSize));
         }
         public override void DrawSymetrically(Graphics g)
@@ -159,12 +163,10 @@ namespace RePaint.Figures
                     else
                         Location = new Point(End.X - FigureSize.Height, Location.Y);
                     break;
-                case 1:
-                case 3:
+                case 1: case 3:
                     Location = new Point(End.X - FigureSize.Height, Location.Y);
                     break;
-                case 2:
-                case 4:
+                case 2: case 4:
                     End = new Point(Location.X + FigureSize.Height, End.Y);
                     break;
             }
@@ -181,7 +183,7 @@ namespace RePaint.Figures
         public override void Erase(Graphics g, Color eraseClr)
         {
             Pen eraser = new Pen(eraseClr);
-            eraser.Width = FigurePen.Width;
+            eraser.Width = FigureWidth;
             g.DrawRectangle(eraser, Location.X, Location.Y, FigureSize.Width, FigureSize.Height);
         }
 
@@ -229,8 +231,8 @@ namespace RePaint.Figures
                     int mx = FigureSize.Width / 2;
                     int my = FigureSize.Height / 2;
 
-                    Location = new Point(point.X + mx, point.Y + my);
-                    End = new Point(point.X - mx, point.Y - my);
+                    Location = new Point(point.X - mx, point.Y - my);
+                    End = new Point(point.X + mx, point.Y + my);
                     Update();
                     Draw(g);
                     break;
@@ -287,8 +289,8 @@ namespace RePaint.Figures
                     int mx = FigureSize.Height / 2;
                     int my = FigureSize.Height / 2;
 
-                    Location = new Point(point.X + mx, point.Y + my);
-                    End = new Point(point.X - mx, point.Y - my);
+                    Location = new Point(point.X - mx, point.Y - my);
+                    End = new Point(point.X + mx, point.Y + my);
                     Update();
                     Draw(g);
                     break;
@@ -303,7 +305,7 @@ namespace RePaint.Figures
 
         public override bool Contains(Point point, int offset = 0)
         {
-            offset += (int)FigurePen.Width;
+            offset += (int)FigureWidth;
 
             if ((point.X < Location.X - offset && point.X < End.X - offset) ||
                 (point.X > Location.X + offset && point.X > End.X + offset) ||
@@ -315,10 +317,10 @@ namespace RePaint.Figures
         }
 
         public Rectangle(Point start, Point end, Pen pen)
+            : base(pen)
         {
             Location = start;
             End = end;
-            FigurePen = pen;
 
             Update();
 

@@ -3,15 +3,16 @@ using System.Drawing;
 
 namespace RePaint.Figures
 {
+    [Serializable]
     class SprayCurve : Curve
     {
         float distribution;
         public override void Draw(Graphics g)
         {
             Random rnd = new Random();
-            int radius = (int)FigurePen.Width / 2;
+            int radius = (int)FigureWidth / 2;
 
-            for (int i = 0; i < distribution * 100; ++i)
+            for (int i = 0; i < distribution * FigurePen.Width * 4; ++i)
             {
                 // Выбираем полярные координаты
                 // где theta это случайный угол между 0..2*PI
@@ -24,12 +25,12 @@ namespace RePaint.Figures
                 double x = points[points.Length - 1].X + Math.Cos(theta) * r;
                 double y = points[points.Length - 1].Y + Math.Sin(theta) * r;
 
-                g.DrawEllipse(new Pen(FigurePen.Color, 1), new System.Drawing.Rectangle((int)x - 1, (int)y - 1, 1, 1));
+                g.DrawEllipse(new Pen(FigureColor, 1), new System.Drawing.Rectangle((int)x - 1, (int)y - 1, 1, 1));
             }
         }
 
-        public SprayCurve(Point[] points, float distribution, Pen pen)
-            : base(points, pen)
+        public SprayCurve(Point point, float distribution, Pen pen)
+            : base(new Point[] { point }, pen)
         {
             this.distribution = distribution;
         }

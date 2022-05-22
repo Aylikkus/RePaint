@@ -3,7 +3,8 @@ using System.Drawing;
 
 namespace RePaint.Figures
 {
-    internal class EllipsePie : Rectangle
+    [Serializable]
+    class EllipsePie : Rectangle
     {
         public float StartAngle { get; set; }
         public float SweepAngle { get; set; }
@@ -74,138 +75,15 @@ namespace RePaint.Figures
 
         public override void Draw(Graphics g)
         {
-            try
-            {
+            if (FigureSize.Width != 0 && FigureSize.Height != 0)
                 g.DrawPie(FigurePen, Location.X, Location.Y, FigureSize.Width, FigureSize.Height, StartAngle, SweepAngle);
-            }
-            catch (ArgumentException) { }
         }
 
         public override void Erase(Graphics g, Color eraseClr)
         {
             Pen eraser = new Pen(eraseClr);
-            eraser.Width = FigurePen.Width;
+            eraser.Width = FigureWidth;
             g.DrawPie(eraser, Location.X, Location.Y, FigureSize.Width, FigureSize.Height, StartAngle, SweepAngle);
-        }
-
-        public override void RedrawAt(Point point, Graphics g)
-        {
-            switch (selected)
-            {
-                // Угол не выбран
-                case 0:
-                    selected = selectCorner(point);
-                    break;
-
-                // Левый верхний угол
-                case 1:
-                    Location = point;
-                    Update();
-                    Draw(g);
-                    break;
-
-                // Правый верхний угол
-                case 2:
-                    Location = new Point(Location.X, point.Y);
-                    End = new Point(point.X, End.Y);
-                    Update();
-                    Draw(g);
-                    break;
-
-                // Нижний левый угол
-                case 3:
-                    Location = new Point(point.X, Location.Y);
-                    End = new Point(End.X, point.Y);
-                    Update();
-                    Draw(g);
-                    break;
-
-                // Нижний правый угол
-                case 4:
-                    End = point;
-                    Update();
-                    Draw(g);
-                    break;
-
-                // Центр прямоугольника
-                case 5:
-                    int mx = FigureSize.Width / 2;
-                    int my = FigureSize.Height / 2;
-
-                    Location = new Point(point.X + mx, point.Y + my);
-                    End = new Point(point.X - mx, point.Y - my);
-
-                    StartAngle += 180;
-                    Update();
-                    Draw(g);
-                    break;
-
-                // Тело прямоугольника
-                case 255:
-                    Update();
-                    Draw(g);
-                    break;
-            }
-        }
-
-        public override void RedrawSymetricallyAt(Point point, Graphics g)
-        {
-            switch (selected)
-            {
-                // Угол не выбран
-                case 0:
-                    selected = selectCorner(point);
-                    break;
-
-                // Левый верхний угол
-                case 1:
-                    Location = point;
-                    Update();
-                    DrawSymetrically(g);
-                    break;
-
-                // Правый верхний угол
-                case 2:
-                    Location = new Point(Location.X, point.Y);
-                    End = new Point(point.X, End.Y);
-                    Update();
-                    DrawSymetrically(g);
-                    break;
-
-                // Нижний левый угол
-                case 3:
-                    Location = new Point(point.X, Location.Y);
-                    End = new Point(End.X, point.Y);
-                    Update();
-                    DrawSymetrically(g);
-                    break;
-
-                // Нижний правый угол
-                case 4:
-                    End = point;
-                    Update();
-                    DrawSymetrically(g);
-                    break;
-
-                // Центр прямоугольника
-                case 5:
-                    int mx = FigureSize.Height / 2;
-                    int my = FigureSize.Height / 2;
-
-                    Location = new Point(point.X + mx, point.Y + my);
-                    End = new Point(point.X - mx, point.Y - my);
-
-                    StartAngle += 180;
-                    Update();
-                    Draw(g);
-                    break;
-
-                // Тело прямоугольника
-                case 255:
-                    Update();
-                    Draw(g);
-                    break;
-            }
         }
 
         public EllipsePie(Point start, Point end, float startAngle, float sweepAngle, Pen pen)

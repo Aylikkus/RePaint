@@ -12,6 +12,8 @@
         Ellipse,
         EllipsePie,
         Rectangle,
-        LineBezier
+        LineBezier,
+        FillBucket,
+        SelectArea
     }
 }

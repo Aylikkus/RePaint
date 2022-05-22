@@ -3,6 +3,7 @@ using System.Drawing;
 
 namespace RePaint.Figures
 {
+    [Serializable]
     class LineBezier : Figure
     {
         byte selected;
@@ -66,7 +67,7 @@ namespace RePaint.Figures
         public override void Erase(Graphics g, Color eraseClr)
         {
             Pen eraser = new Pen(eraseClr);
-            eraser.Width = FigurePen.Width;
+            eraser.Width = FigureWidth;
             g.DrawBezier(eraser, Location, points[0], points[1], End);
         }
 
@@ -129,6 +130,7 @@ namespace RePaint.Figures
         }
 
         public LineBezier(Point start, Point first, Point second, Point end, Pen pen)
+            : base(pen)
         {
             Location = start;
             End = end;
@@ -137,8 +139,6 @@ namespace RePaint.Figures
                                            () => points[0],
                                            () => points[1],
                                            () => End };
-
-            FigurePen = pen;
 
             Update();
 

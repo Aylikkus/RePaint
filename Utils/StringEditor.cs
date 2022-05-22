@@ -30,5 +30,9 @@
             return fileNameExt;
         }
 
+        public static string Ext(string fileFullName)
+        {
+            return fileFullName.Substring(fileFullName.LastIndexOf('.') + 1);
+        }
     }
 }

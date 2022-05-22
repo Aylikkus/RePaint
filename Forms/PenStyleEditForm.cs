@@ -19,6 +19,11 @@ namespace RePaint.Forms
             rectangleBrPnl.Click += new EventHandler(brushPanel_Click);
             grassBrPnl.Click += new EventHandler(brushPanel_Click);
 
+            PaintAreaArgs.ColorChanged += new EventHandler(paintAreaArgs_ColorChanged);
+
+            opacityTrBar.Value = (int)(PaintAreaArgs.PenColor.A / 2.55);
+            opacityLbl.Text = $"Прозрачность {opacityTrBar.Value}";
+
             previewPanelUpdate();
         }
 
@@ -30,14 +35,14 @@ namespace RePaint.Forms
                 List<Point> points = new List<Point>();
                 for (int i = 20; i < previewPanel.Width - 20; i += 3)
                 {
-                    points.Add(new Point(i, (previewPanel.Height / 2) - (int)(20 * Math.Cos(i * 2)) ));
+                    points.Add(new Point(i, (previewPanel.Height / 2) - (int)(10 * Math.Cos(i * 2)) ));
                 }
 
-                Pen temp = (Pen)PaintArea.Pen.Clone();
-                temp.Width = 4;
+                Pen drawPen = PaintAreaArgs.Pen;
+                drawPen.Width = 20;
 
-                Figure sinusoid = new TextureCurve(points.ToArray(), PaintArea.BrushImage, PaintArea.ImageAttributes, temp);
-                Figure line = new Line(new Point(20, 80), new Point(previewPanel.Width - 20, 80), temp);
+                Figure sinusoid = new BrushCurve(points.ToArray(), PaintAreaArgs.ColoredBrushImage, drawPen);
+                Figure line = new Line(new Point(20, 80), new Point(previewPanel.Width - 20, 80), drawPen);
 
                 sinusoid.Draw(g);
                 line.Draw(g);
@@ -48,14 +53,27 @@ namespace RePaint.Forms
 
         private void dashStyleDomUpDown_SelectedItemChanged(object sender, EventArgs e)
         {
-            PaintArea.Pen.DashStyle = (DashStyle)dashStyleDomUpDown.SelectedIndex;
-            PaintArea.UpdateImageAttributes();
+            PaintAreaArgs.PenDashStyle = (DashStyle)dashStyleDomUpDown.SelectedIndex;
             previewPanelUpdate();
         }
 
         private void brushPanel_Click(object sender, EventArgs e)
         {
-            PaintArea.BrushImage = ((Panel)sender).BackgroundImage;
+            PaintAreaArgs.PrimaryBrushImage = ((Panel)sender).BackgroundImage;
+            previewPanelUpdate();
+        }
+
+        private void opacityTrBar_ValueChanged(object sender, EventArgs e)
+        {
+            Color col = PaintAreaArgs.PenColor;
+            int newOpacity = (int)(opacityTrBar.Value * 2.55);
+            PaintAreaArgs.PenColor = Color.FromArgb(newOpacity, col.R, col.G, col.B);
+            opacityLbl.Text = $"Прозрачность {opacityTrBar.Value}";
+            previewPanelUpdate();
+        }
+
+        private void paintAreaArgs_ColorChanged(object sender, EventArgs e)
+        {
             previewPanelUpdate();
         }
     }

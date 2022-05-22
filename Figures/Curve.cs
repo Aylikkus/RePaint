@@ -4,6 +4,7 @@ using System.Drawing.Drawing2D;
 
 namespace RePaint.Figures
 {
+    [Serializable]
     class Curve : Figure
     {
         protected Point[] points;
@@ -11,29 +12,26 @@ namespace RePaint.Figures
 
         protected byte selectCorner(Point point)
         {
-            if (Math.Abs(Location.X - point.X) < 10 &&
-                Math.Abs(Location.Y - point.Y) < 10)
-            {
-                return 1;
-            }
+            int offset = 20;
 
-            if (Math.Abs(End.X - point.X) < 10 &&
-                Math.Abs(End.Y - point.Y) < 10)
+            foreach (Point p in points)
             {
-                return 2;
+                if (Math.Abs(p.X - point.X) < offset + FigureWidth / 2 &&
+                    Math.Abs(p.Y - point.Y) < offset + FigureWidth / 2)
+                {
+                    return 1;
+                }
             }
 
             return 255;
         }
 
-        protected void fillGapsInPoints(Graphics g, Pen pen)
+        protected void fillGapsInPoints(Graphics g, Color color, 
+            float width)
         {
-            Pen temp = (Pen)pen.Clone();
-            temp.DashStyle = DashStyle.Solid;
-            for (int i = 0; i < points.Length; i++)
+            Pen temp = new Pen(color, width);
+            for (int i = 1; i < points.Length; i++)
             {
-                if (i == 0)
-                    continue;
                 if (Math.Abs(points[i].X - points[i - 1].X) > 1 ||
                     Math.Abs(points[i].Y - points[i - 1].Y) > 1)
                 {
@@ -44,16 +42,13 @@ namespace RePaint.Figures
 
         public override bool Contains(Point point, int offset = 0)
         {
-            if (Math.Abs(Location.X - point.X) < 10 &&
-                Math.Abs(Location.Y - point.Y) < 10)
+            foreach (Point p in points)
             {
-                return true;
-            }
-
-            if (Math.Abs(End.X - point.X) < 10 &&
-                Math.Abs(End.Y - point.Y) < 10)
-            {
-                return true;
+                if (Math.Abs(p.X - point.X) < offset + FigureWidth / 2 &&
+                    Math.Abs(p.Y - point.Y) < offset + FigureWidth / 2)
+                {
+                    return true;
+                }
             }
 
             return false;
@@ -61,11 +56,11 @@ namespace RePaint.Figures
 
         public override void Draw(Graphics g)
         {
-            int pWidth = (int)FigurePen.Width;
-            fillGapsInPoints(g, FigurePen);
+            int pWidth = (int)FigureWidth;
+            fillGapsInPoints(g, FigureColor, FigureWidth);
             foreach (var point in points)
             {
-                g.FillEllipse(FigurePen.Brush, new System.Drawing.Rectangle(
+                g.FillEllipse(new SolidBrush(FigureColor), new System.Drawing.Rectangle(
                 new Point(point.X - pWidth / 2, point.Y - pWidth / 2),
                 new Size(pWidth, pWidth)));
             }
@@ -78,14 +73,11 @@ namespace RePaint.Figures
 
         public override void Erase(Graphics g, Color eraseClr)
         {
-            Pen eraser = new Pen(eraseClr);
-            eraser.Width = FigurePen.Width;
-
-            int pWidth = (int)FigurePen.Width;
-            fillGapsInPoints(g, eraser);
+            int pWidth = (int)FigureWidth;
+            fillGapsInPoints(g, eraseClr, FigureWidth);
             foreach (var point in points)
             {
-                g.FillEllipse(eraser.Brush, new System.Drawing.Rectangle(
+                g.FillEllipse(new SolidBrush(eraseClr), new System.Drawing.Rectangle(
                 new Point(point.X - pWidth / 2, point.Y - pWidth / 2),
                 new Size(pWidth, pWidth)));
             }
@@ -109,11 +101,20 @@ namespace RePaint.Figures
 
         public override void Select(Graphics g)
         {
-            g.FillRectangle(new SolidBrush(Color.White), Location.X - 2, Location.Y - 2, 5, 5);
-            g.DrawRectangle(new Pen(Color.Black, 2), Location.X - 2, Location.Y - 2, 5, 5);
+            int squareSide = 5 + (int)FigureWidth / 4;
+            Size squareSize = new Size(squareSide, squareSide);
 
-            g.FillRectangle(new SolidBrush(Color.White), End.X - 2, End.Y - 2, 5, 5);
-            g.DrawRectangle(new Pen(Color.Black, 2), End.X - 2, End.Y - 2, 5, 5);
+            Pen ordinary = new Pen(Color.Black, 2);
+            SolidBrush sb = new SolidBrush(Color.White);
+
+            foreach (Point p in points)
+            {
+                Point edge = p;
+                edge.Offset(-squareSide / 2, -squareSide / 2);
+
+                g.FillEllipse(sb, new System.Drawing.Rectangle(edge, squareSize));
+                g.DrawEllipse(ordinary, new System.Drawing.Rectangle(edge, squareSize));
+            }
         }
 
         public override void Update()
@@ -129,10 +130,9 @@ namespace RePaint.Figures
         }
 
         public Curve(Point[] points, Pen pen)
+            : base(pen)
         {
             this.points = points;
-
-            FigurePen = pen;
 
             Update();
             selected = 0;
