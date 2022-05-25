@@ -7,6 +7,9 @@ Transparency and brushes included. Layers and more-in-depth figure editing are o
 
 This repository represents a snapshost of a source code, so don't expect a long commit trees.
 
+(you can run this on Linux with mono, but there are bugs)
+$ mono RePaint.exe
+
 # Currently there are no English Language
 
 # Rus / Русский
@@ -15,3 +18,6 @@ This repository represents a snapshost of a source code, so don't expect a long 
 Поддерживает прозрачность и кисти. Планируется добавить слои и редактированеи стилей примитивов.
 
 Данный репозитоир представляет собой снимок исходного кода, так что не ожидайте глубоких коммитов.
+
+(Можно запустить на линуксе с моно, но есть баги)
+$ mono RePaint.exe
