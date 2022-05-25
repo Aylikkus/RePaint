@@ -24,7 +24,7 @@ namespace RePaint.Utils
         public static State State { get; set; }
 
         public static event EventHandler ColorChanged;
-
+        public static event EventHandler BrushImageChanged;
         public static Image PrimaryBrushImage 
         { 
             get { return _brushImage; }
@@ -32,6 +32,7 @@ namespace RePaint.Utils
             {
                 _brushImage = value;
                 UpdateColoredBrushImage();
+                BrushImageChanged?.Invoke(typeof(PaintAreaArgs), EventArgs.Empty);
             }
         }
         public static Image ColoredBrushImage 

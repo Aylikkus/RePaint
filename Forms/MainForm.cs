@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 using RePaint.Utils;
+using RePaint.Figures;
 
 namespace RePaint.Forms
 {
@@ -180,6 +181,10 @@ namespace RePaint.Forms
                 }
             }
 
+
+            PaintAreaArgs.BrushImageChanged += new EventHandler(
+                (object sender, EventArgs e) => updateBrushStylePnl());
+
             DoubleBuffered = true;
 
             CreateNewPaintArea(Color.White);
@@ -190,9 +195,17 @@ namespace RePaint.Forms
         private void updateBrushStylePnl()
         {
             Image image = new Bitmap(brushStylePnl.Width, brushStylePnl.Height);
+            Point center = new Point(brushStylePnl.Width / 2 - 2, brushStylePnl.Height / 2 - 2);
+            Pen temp = PaintAreaArgs.Pen;
+
+            if (temp.Width > brushStylePnl.Width)
+                temp.Width = brushStylePnl.Width;
+
             using (Graphics g = Graphics.FromImage(image))
             {
-                g.FillEllipse(PaintAreaArgs.Pen.Brush, 0, 0, brushStylePnl.Width - 5, brushStylePnl.Height - 5);
+                BrushCurve tb = new BrushCurve(new Point[] { center }, 
+                    PaintAreaArgs.ColoredBrushImage, temp);
+                tb.Draw(g);
             }
 
             brushStylePnl.BackgroundImage = image;
@@ -358,15 +371,17 @@ namespace RePaint.Forms
             brushClrPnl.BackColor = altClrPnl.BackColor;
 
             altClrPnl.BackColor = temp;
+
+            updateBrushStylePnl();
         }
 
         private void brushClrPnl_Click(object sender, EventArgs e)
         {
-            if (ColorDialog.ShowDialog() == DialogResult.OK)
+            if (colorDialog.ShowDialog() == DialogResult.OK)
             {
                 PaintAreaArgs.PenColor = Color.FromArgb(
-                    PaintAreaArgs.PenColor.A, ColorDialog.Color);
-                brushClrPnl.BackColor = ColorDialog.Color;
+                    PaintAreaArgs.PenColor.A, colorDialog.Color);
+                brushClrPnl.BackColor = colorDialog.Color;
 
                 updateBrushStylePnl();
             }
@@ -374,8 +389,8 @@ namespace RePaint.Forms
 
         private void altClrPnl_Click(object sender, EventArgs e)
         {
-            if (ColorDialog.ShowDialog() == DialogResult.OK)
-                altClrPnl.BackColor = ColorDialog.Color;
+            if (colorDialog.ShowDialog() == DialogResult.OK)
+                altClrPnl.BackColor = colorDialog.Color;
         }
 
         private void penStyleBtn_Click(object sender, EventArgs e)
@@ -393,6 +408,8 @@ namespace RePaint.Forms
         {
             PaintAreaArgs.PaintWidth = penWidthTrBar.Value;
             widthLabel.Text = $"Толщина: {penWidthTrBar.Value}";
+
+            updateBrushStylePnl();
         }
         private void PieStartAngleTrBar_ValueChanged(object sender, EventArgs e)
         {
@@ -441,10 +458,17 @@ namespace RePaint.Forms
                     ReInitializePaintArea();
                     return;
                 }
-                using (FileStream fs = new FileStream(OpenFileDialog.FileName, FileMode.Open))
+                try
                 {
-                    CreateNewPaintAreaFromImage(Image.FromStream(fs));
-                    fs.Close();
+                    using (FileStream fs = new FileStream(OpenFileDialog.FileName, FileMode.Open))
+                    {
+                        CreateNewPaintAreaFromImage(Image.FromStream(fs));
+                        fs.Close();
+                    }
+                }
+                catch (ArgumentException)
+                {
+                    MessageBox.Show("Изображение не читается");
                 }
             }
         }
@@ -526,6 +550,14 @@ namespace RePaint.Forms
         private void rasterizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             paintArea.RasterizeSelected();
+        }
+
+        private void changeFillColToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (colorDialog.ShowDialog() == DialogResult.OK)
+            {
+                PaintAreaArgs.FillColor = colorDialog.Color;
+            }
         }
 
         private void AboutToolStripMenuItem_Click(object sender, EventArgs e)

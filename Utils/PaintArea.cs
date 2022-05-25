@@ -306,8 +306,8 @@ namespace RePaint.Utils
                     figure = new EllipsePie(StartPoint, EndPoint, PaintAreaArgs.PieStartAngle, PaintAreaArgs.PieSweepAngle, PaintAreaArgs.Pen);
                     break;
                 case State.LineBezier:
-                    Point middle = new Point((EndPoint.X - StartPoint.X) / 2 + StartPoint.X,
-                                             (EndPoint.Y - StartPoint.X) / 2 + StartPoint.Y);
+                    Point middle = new Point((EndPoint.X + StartPoint.X) / 2,
+                                             (EndPoint.Y + StartPoint.Y) / 2);
                     figure = new LineBezier(StartPoint, middle, middle, EndPoint, PaintAreaArgs.Pen);
                     break;
                 case State.FillBucket:

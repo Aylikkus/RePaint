@@ -42,6 +42,8 @@
             this.grassBrPnl = new System.Windows.Forms.Panel();
             this.rectangleBrPnl = new System.Windows.Forms.Panel();
             this.solidBrPnl = new System.Windows.Forms.Panel();
+            this.loadBrushBtn = new System.Windows.Forms.Button();
+            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.opacityTrBar)).BeginInit();
             this.SuspendLayout();
             // 
@@ -158,6 +160,7 @@
             this.grassBrPnl.Name = "grassBrPnl";
             this.grassBrPnl.Size = new System.Drawing.Size(30, 30);
             this.grassBrPnl.TabIndex = 1;
+            this.grassBrPnl.Click += new System.EventHandler(this.brushPanel_Click);
             // 
             // rectangleBrPnl
             // 
@@ -167,6 +170,7 @@
             this.rectangleBrPnl.Name = "rectangleBrPnl";
             this.rectangleBrPnl.Size = new System.Drawing.Size(30, 30);
             this.rectangleBrPnl.TabIndex = 0;
+            this.rectangleBrPnl.Click += new System.EventHandler(this.brushPanel_Click);
             // 
             // solidBrPnl
             // 
@@ -176,12 +180,28 @@
             this.solidBrPnl.Name = "solidBrPnl";
             this.solidBrPnl.Size = new System.Drawing.Size(30, 30);
             this.solidBrPnl.TabIndex = 1;
+            this.solidBrPnl.Click += new System.EventHandler(this.brushPanel_Click);
+            // 
+            // loadBrushBtn
+            // 
+            this.loadBrushBtn.Location = new System.Drawing.Point(12, 132);
+            this.loadBrushBtn.Name = "loadBrushBtn";
+            this.loadBrushBtn.Size = new System.Drawing.Size(205, 30);
+            this.loadBrushBtn.TabIndex = 0;
+            this.loadBrushBtn.Text = "Загрузить свою кисть";
+            this.loadBrushBtn.UseVisualStyleBackColor = true;
+            this.loadBrushBtn.Click += new System.EventHandler(this.loadBrushBtn_Click);
+            // 
+            // openFileDialog
+            // 
+            this.openFileDialog.Filter = "Png|*.png";
             // 
             // PenStyleEditForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(338, 303);
+            this.Controls.Add(this.loadBrushBtn);
             this.Controls.Add(this.p_br5Pnl);
             this.Controls.Add(this.p_br4Pnl);
             this.Controls.Add(this.p_br3Pnl);
@@ -196,7 +216,9 @@
             this.Controls.Add(this.dashStyleDomUpDown);
             this.Controls.Add(this.previewPanel);
             this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(354, 342);
             this.MinimizeBox = false;
+            this.MinimumSize = new System.Drawing.Size(354, 342);
             this.Name = "PenStyleEditForm";
             this.ShowIcon = false;
             this.Text = "Стиль пера";
@@ -222,5 +244,7 @@
         private System.Windows.Forms.Panel p_br3Pnl;
         private System.Windows.Forms.Panel p_br4Pnl;
         private System.Windows.Forms.Panel p_br5Pnl;
+        private System.Windows.Forms.Button loadBrushBtn;
+        private System.Windows.Forms.OpenFileDialog openFileDialog;
     }
 }

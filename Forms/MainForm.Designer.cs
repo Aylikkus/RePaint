@@ -39,6 +39,8 @@
             this.editToolStripMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.backToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.forwardToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rasterizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.canvasPanel = new System.Windows.Forms.Panel();
@@ -70,11 +72,10 @@
             this.tlStrpStCoords = new System.Windows.Forms.ToolStripStatusLabel();
             this.tlStrpStRes = new System.Windows.Forms.ToolStripStatusLabel();
             this.tlStrpStpFileName = new System.Windows.Forms.ToolStripStatusLabel();
-            this.ColorDialog = new System.Windows.Forms.ColorDialog();
+            this.colorDialog = new System.Windows.Forms.ColorDialog();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.rasterizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.changeFillColToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.canvasPanel.SuspendLayout();
             this.toolBox.SuspendLayout();
@@ -148,7 +149,8 @@
             this.backToolStripMenuItem,
             this.forwardToolStripMenuItem,
             this.deleteToolStripMenuItem,
-            this.rasterizeToolStripMenuItem});
+            this.rasterizeToolStripMenuItem,
+            this.changeFillColToolStripMenuItem});
             this.editToolStripMenu.Name = "editToolStripMenu";
             this.editToolStripMenu.Size = new System.Drawing.Size(99, 20);
             this.editToolStripMenu.Text = "Редактировать";
@@ -157,7 +159,7 @@
             // 
             this.backToolStripMenuItem.Enabled = false;
             this.backToolStripMenuItem.Name = "backToolStripMenuItem";
-            this.backToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.backToolStripMenuItem.Size = new System.Drawing.Size(223, 22);
             this.backToolStripMenuItem.Text = "Назад (Ctrl + Z)";
             this.backToolStripMenuItem.Click += new System.EventHandler(this.backToolStripMenuItem_Click);
             // 
@@ -165,9 +167,23 @@
             // 
             this.forwardToolStripMenuItem.Enabled = false;
             this.forwardToolStripMenuItem.Name = "forwardToolStripMenuItem";
-            this.forwardToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.forwardToolStripMenuItem.Size = new System.Drawing.Size(223, 22);
             this.forwardToolStripMenuItem.Text = "Вперёд (Ctrl + Y)";
             this.forwardToolStripMenuItem.Click += new System.EventHandler(this.forwardToolStripMenuItem_Click);
+            // 
+            // deleteToolStripMenuItem
+            // 
+            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(223, 22);
+            this.deleteToolStripMenuItem.Text = "Удалить (Delete)";
+            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
+            // 
+            // rasterizeToolStripMenuItem
+            // 
+            this.rasterizeToolStripMenuItem.Name = "rasterizeToolStripMenuItem";
+            this.rasterizeToolStripMenuItem.Size = new System.Drawing.Size(223, 22);
+            this.rasterizeToolStripMenuItem.Text = "Растеризовать (Ctrl + R)";
+            this.rasterizeToolStripMenuItem.Click += new System.EventHandler(this.rasterizeToolStripMenuItem_Click);
             // 
             // helpToolStripMenuItem
             // 
@@ -391,7 +407,7 @@
             // penWidthTrBar
             // 
             this.penWidthTrBar.Location = new System.Drawing.Point(3, 204);
-            this.penWidthTrBar.Maximum = 350;
+            this.penWidthTrBar.Maximum = 200;
             this.penWidthTrBar.Minimum = 1;
             this.penWidthTrBar.Name = "penWidthTrBar";
             this.penWidthTrBar.Size = new System.Drawing.Size(81, 45);
@@ -555,8 +571,8 @@
             // 
             // ColorDialog
             // 
-            this.ColorDialog.AnyColor = true;
-            this.ColorDialog.FullOpen = true;
+            this.colorDialog.AnyColor = true;
+            this.colorDialog.FullOpen = true;
             // 
             // SaveFileDialog
             // 
@@ -571,19 +587,12 @@
     "if|Icon|*.ico|Rpif|*.rpif";
             this.OpenFileDialog.InitialDirectory = "%userprofile%\\Pictures";
             // 
-            // deleteToolStripMenuItem
+            // changeFillColToolStripMenuItem
             // 
-            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
-            this.deleteToolStripMenuItem.Text = "Удалить (Delete)";
-            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
-            // 
-            // rasterizeToolStripMenuItem
-            // 
-            this.rasterizeToolStripMenuItem.Name = "rasterizeToolStripMenuItem";
-            this.rasterizeToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
-            this.rasterizeToolStripMenuItem.Text = "Растеризовать (Ctrl + R)";
-            this.rasterizeToolStripMenuItem.Click += new System.EventHandler(this.rasterizeToolStripMenuItem_Click);
+            this.changeFillColToolStripMenuItem.Name = "changeFillColToolStripMenuItem";
+            this.changeFillColToolStripMenuItem.Size = new System.Drawing.Size(223, 22);
+            this.changeFillColToolStripMenuItem.Text = "Изменить цвет заполнения";
+            this.changeFillColToolStripMenuItem.Click += new System.EventHandler(this.changeFillColToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -649,7 +658,7 @@
         private System.Windows.Forms.Button lineBezierBtn;
         private System.Windows.Forms.Panel brushStylePnl;
         private System.Windows.Forms.Button swapBtn;
-        public System.Windows.Forms.ColorDialog ColorDialog;
+        public System.Windows.Forms.ColorDialog colorDialog;
         private System.Windows.Forms.Button curveBtn;
         private System.Windows.Forms.Button sprayBtn;
         private System.Windows.Forms.ToolStripStatusLabel tlStrpStRes;
@@ -664,6 +673,7 @@
         private System.Windows.Forms.Button selectAreaBtn;
         private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rasterizeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem changeFillColToolStripMenuItem;
     }
 }
 

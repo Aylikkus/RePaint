@@ -34,10 +34,10 @@ namespace RePaint.Forms
 
         private void clrPanel_Click(object sender, System.EventArgs e)
         {
-            if (mf.ColorDialog.ShowDialog() == DialogResult.OK)
+            if (mf.colorDialog.ShowDialog() == DialogResult.OK)
             {
-                Color = mf.ColorDialog.Color;
-                clrPanel.BackColor = mf.ColorDialog.Color;
+                Color = mf.colorDialog.Color;
+                clrPanel.BackColor = mf.colorDialog.Color;
             }
         }
 

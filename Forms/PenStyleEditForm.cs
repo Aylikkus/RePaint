@@ -15,10 +15,6 @@ namespace RePaint.Forms
         {
             InitializeComponent();
 
-            solidBrPnl.Click += new EventHandler(brushPanel_Click);
-            rectangleBrPnl.Click += new EventHandler(brushPanel_Click);
-            grassBrPnl.Click += new EventHandler(brushPanel_Click);
-
             PaintAreaArgs.ColorChanged += new EventHandler(paintAreaArgs_ColorChanged);
 
             opacityTrBar.Value = (int)(PaintAreaArgs.PenColor.A / 2.55);
@@ -75,6 +71,22 @@ namespace RePaint.Forms
         private void paintAreaArgs_ColorChanged(object sender, EventArgs e)
         {
             previewPanelUpdate();
+        }
+
+        private void loadBrushBtn_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    PaintAreaArgs.PrimaryBrushImage = new Bitmap(openFileDialog.FileName);
+                    previewPanelUpdate();
+                }
+                catch (ArgumentException)
+                {
+                    MessageBox.Show("Изображение не читается");
+                }
+            }
         }
     }
 }
