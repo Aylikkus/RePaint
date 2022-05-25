@@ -8,5 +8,10 @@ namespace RePaint.Forms
         {
             InitializeComponent();
         }
+
+        private void gitHubLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(gitHubLink.Text);
+        }
     }
 }

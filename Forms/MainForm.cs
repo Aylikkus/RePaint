@@ -78,6 +78,8 @@ namespace RePaint.Forms
             paintArea.PictureBox.MouseMove += new MouseEventHandler(paintArea_MouseMove);
             paintArea.ImageUpdated += new EventHandler(paintArea_ImageChanged);
             paintArea.PictureBox.SizeChanged += new EventHandler(paintArea_SizeChanged);
+
+            paintArea.PictureBox.Refresh();
         }
 
         public MainForm()

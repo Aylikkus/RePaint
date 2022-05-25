@@ -30,6 +30,7 @@
         {
             this.logoPictureBox = new System.Windows.Forms.PictureBox();
             this.nameLabel = new System.Windows.Forms.Label();
+            this.gitHubLink = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.logoPictureBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -47,17 +48,28 @@
             // 
             this.nameLabel.AutoSize = true;
             this.nameLabel.Font = new System.Drawing.Font("Lucida Calligraphy", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nameLabel.Location = new System.Drawing.Point(167, 251);
+            this.nameLabel.Location = new System.Drawing.Point(155, 251);
             this.nameLabel.Name = "nameLabel";
-            this.nameLabel.Size = new System.Drawing.Size(226, 37);
+            this.nameLabel.Size = new System.Drawing.Size(249, 37);
             this.nameLabel.TabIndex = 1;
-            this.nameLabel.Text = "RePaint v0.1";
+            this.nameLabel.Text = "RePaint v0.1.1";
+            // 
+            // gitHubLink
+            // 
+            this.gitHubLink.AutoSize = true;
+            this.gitHubLink.Location = new System.Drawing.Point(190, 288);
+            this.gitHubLink.Name = "gitHubLink";
+            this.gitHubLink.Size = new System.Drawing.Size(182, 13);
+            this.gitHubLink.TabIndex = 2;
+            this.gitHubLink.Text = "https://github.com/Aylikkus/RePaint";
+            this.gitHubLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.gitHubLink_LinkClicked);
             // 
             // About
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(584, 361);
+            this.Controls.Add(this.gitHubLink);
             this.Controls.Add(this.nameLabel);
             this.Controls.Add(this.logoPictureBox);
             this.MaximizeBox = false;
@@ -76,5 +88,6 @@
 
         private System.Windows.Forms.PictureBox logoPictureBox;
         private System.Windows.Forms.Label nameLabel;
+        private System.Windows.Forms.LinkLabel gitHubLink;
     }
 }
