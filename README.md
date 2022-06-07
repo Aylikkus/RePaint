@@ -1,7 +1,7 @@
 # RePaint
 
 # Eng / Английский
-My paint application in c# that lets you draw some figures and pictures. Supports basic image formats and a custom file format called RPIF ("RePaint Image Format"), from which you can restore the state of an image before saving it to png or jpeg.
+My paint application in c# that lets you draw some figures and pictures. Supports basic image formats and a custom file format called RPIF ("RePaint Image Format"), which lets you restore the state of an image before saving it to png or jpeg.
 Provides such basic tools as Rectangle, Ellipse, Line, Line Bezier, selection Area, fill Bucket and more.
 Transparency and brushes included. Layers and more-in-depth figure editing are on the way to be added.
 
